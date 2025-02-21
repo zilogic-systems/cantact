@@ -71,7 +71,7 @@ pub extern "C" fn cantact_init() -> *mut CInterface {
 /// After calling, the pointer is no longer valid.
 #[no_mangle]
 pub unsafe extern "C" fn cantact_deinit(ptr: *mut CInterface) -> i32 {
-    Box::from_raw(ptr);
+    let _ = Box::from_raw(ptr);
     0
 }
 
@@ -82,7 +82,7 @@ pub unsafe extern "C" fn cantact_set_rx_callback(
     ptr: *mut CInterface,
     cb: Option<extern "C" fn(*const CFrame)>,
 ) -> i32 {
-    let mut ci = &mut *ptr;
+    let ci = &mut *ptr;
     ci.c_rx_cb = cb;
     0
 }
@@ -104,7 +104,7 @@ pub unsafe extern "C" fn cantact_open(ptr: *mut CInterface) -> i32 {
 /// can be performed.
 #[no_mangle]
 pub unsafe extern "C" fn cantact_close(ptr: *mut CInterface) -> i32 {
-    let mut ci = &mut *ptr;
+    let ci = &mut *ptr;
     ci.i = None;
     0
 }
