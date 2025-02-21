@@ -61,6 +61,11 @@ impl PyInterface {
         Ok(())
     }
 
+    fn set_data_bitrate(&mut self, channel: usize, bitrate: u32) -> PyResult<()> {
+        self.i.set_data_bitrate(channel, bitrate)?;
+        Ok(())
+    }
+
     fn set_bit_timing(
         &mut self,
         channel: usize,
