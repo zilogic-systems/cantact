@@ -3,10 +3,20 @@ import cantact
 from typing import List, Dict, Tuple, Optional, Union, NamedTuple
 
 
+class CANInterfaceSingleton:
+    _instance = None
+
+    def __new__(cls, *args, **kwargs):
+        if not cls._instance:
+            cls._instance = super().__new__(cls, *args, **kwargs)
+            cls._instance = cantact.Interface()
+        return cls._instance
+
+
 class CANTransmitter:
 
-    def __init__(self, cantact_interface: cantact.Interface, device_id: int):
-        self.cantact_interface = cantact_interface
+    def __init__(self, device_id: int):
+        self.cantact_interface = CANInterfaceSingleton()
         self.device_id = device_id
         self.tx_count = 0
 
@@ -40,8 +50,8 @@ if "__main__" == __name__:
     arg_parser.add_argument("-s", "--speed-for-arbitration", nargs="?", type=int, default=500_000)
     arg_parser.add_argument("-d", "--speed-for-data", nargs="?", type=int, default=500_000)
     args = arg_parser.parse_args()
-    can_if = cantact.Interface()
-    can_tx = CANTransmitter(can_if, args.tx_channel)
+    can_if = CANInterfaceSingleton()
+    can_tx = CANTransmitter(args.tx_channel)
     fd = (args.speed_for_data > args.speed_for_arbitration) and (args.speed_for_data > 500_000)
     can_tx.start(args.speed_for_arbitration, args.speed_for_data if fd else None)
     can_tx.send(args.data, fd=fd, brs=fd)
