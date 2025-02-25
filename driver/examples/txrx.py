@@ -35,7 +35,7 @@ class CANTransmitter:
 
     def send(self, tx_data: List[int], arbitration: int = 0x01B, fd: bool = False, brs: bool = False):
         self.tx_count += 1
-        self.cantact_interface.send(self.device_id, arbitration, False, False, fd, brs, len(tx_data), tx_data)
+        self.cantact_interface.send_fd(self.device_id, arbitration, False, False, fd, brs, len(tx_data), tx_data)
         print(self.tx_count)
 
     def recv(self):

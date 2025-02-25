@@ -127,6 +127,38 @@ impl PyInterface {
         id: u32,
         ext: bool,
         rtr: bool,
+        dlc: u8,
+        data: Vec<u8>,
+    ) -> PyResult<()> {
+        let mut data_array: Vec<u8> = vec![0; 64];
+        for i in 0..dlc as usize {
+            if i < dlc.into() {
+                data_array[i] = data[i];
+            }
+        }
+        self.i.send(Frame {
+            can_id: id,
+            can_dlc: dlc,
+            ext,
+            rtr,
+            data: data_array,
+            channel,
+            loopback: false,
+            fd: false,
+            brs: false,
+            err: false,
+            esi: false,
+            timestamp: None,
+        })?;
+        Ok(())
+    }
+
+    fn send_fd(
+        &mut self,
+        channel: u8,
+        id: u32,
+        ext: bool,
+        rtr: bool,
         fd: bool,
         brs: bool,
         dlc: u8,
