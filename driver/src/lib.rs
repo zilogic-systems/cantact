@@ -539,22 +539,27 @@ fn calculate_bit_timing(clk: u32, bitrate: u32) -> Result<BitTiming, Error> {
 
             for seg1 in min_seg1..max_seg1 {
                 // subtract 1 from seg2 to account for propagation phase
-                let seg2 = btq_rounded - seg1 - 1;
-                if seg2 < min_seg2 || seg2 > max_seg2 {
-                    // invalid seg2 value
-                    continue;
+                if btq_rounded < (seg1 + 1) {
+                    break;
+                } else {
+                    let seg2 = btq_rounded - (seg1 + 1);
+                    if seg2 < min_seg2 || seg2 > max_seg2 {
+                        // invalid seg2 value
+                        continue;
+                    }
+                    // brp, seg1, and seg2 are all valid
+                    return Ok(BitTiming {
+                        brp,
+                        prop_seg: 0,
+                        phase_seg1: seg1,
+                        phase_seg2: seg2,
+                        sjw: 1,
+                    });
                 }
-                // brp, seg1, and seg2 are all valid
-                return Ok(BitTiming {
-                    brp,
-                    prop_seg: 0,
-                    phase_seg1: seg1,
-                    phase_seg2: seg2,
-                    sjw: 1,
-                });
             }
         }
     }
+
     Err(Error::InvalidBitrate(bitrate))
 }
 
