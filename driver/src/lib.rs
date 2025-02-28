@@ -539,22 +539,27 @@ fn calculate_bit_timing(clk: u32, bitrate: u32) -> Result<BitTiming, Error> {
 
             for seg1 in min_seg1..max_seg1 {
                 // subtract 1 from seg2 to account for propagation phase
-                let seg2 = btq_rounded - seg1 - 1;
-                if seg2 < min_seg2 || seg2 > max_seg2 {
-                    // invalid seg2 value
-                    continue;
+                if btq_rounded < (seg1 + 1) {
+                    break;
+                } else {
+                    let seg2 = btq_rounded - (seg1 + 1);
+                    if seg2 < min_seg2 || seg2 > max_seg2 {
+                        // invalid seg2 value
+                        continue;
+                    }
+                    // brp, seg1, and seg2 are all valid
+                    return Ok(BitTiming {
+                        brp,
+                        prop_seg: 0,
+                        phase_seg1: seg1,
+                        phase_seg2: seg2,
+                        sjw: 1,
+                    });
                 }
-                // brp, seg1, and seg2 are all valid
-                return Ok(BitTiming {
-                    brp,
-                    prop_seg: 0,
-                    phase_seg1: seg1,
-                    phase_seg2: seg2,
-                    sjw: 1,
-                });
             }
         }
     }
+
     Err(Error::InvalidBitrate(bitrate))
 }
 
@@ -569,7 +574,9 @@ mod tests {
     #[test]
     fn test_bit_timing() {
         let clk = 24000000;
-        let bitrates = vec![1000000, 500000, 250000, 125000, 33333];
+        let bitrates = vec![4_020_100, 4_000_000, 3_000_000, 2_400_000, 2_000_000, 1_500_000, 1_200_000, 1_000_000,
+                                    800_000, 600_000, 520_000, 500_000, 420_000, 400_000, 320_000, 300_000, 250_000, 200_000, 125_000, 120_000, 100_000,
+                                    90_000, 80_000, 70_000, 60_000, 50_000, 40_000, 33_333, 30_000, 29_628];
         for b in bitrates {
             let bt = calculate_bit_timing(clk, b).unwrap();
 

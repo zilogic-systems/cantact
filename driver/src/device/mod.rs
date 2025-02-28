@@ -222,7 +222,7 @@ impl Device {
         index: u16,
         data: &[u8],
     ) {
-        let mut transfer = unsafe { &mut *self.ctrl_transfer.as_ptr() };
+        let transfer = unsafe { &mut *self.ctrl_transfer.as_ptr() };
 
         // clear buffer
         self.ctrl_buf = [0u8; CTRL_BUF_SIZE];
@@ -250,7 +250,7 @@ impl Device {
     }
 
     fn fill_bulk_out_transfer(&mut self, transfer: *mut libusb_transfer) {
-        let mut transfer = unsafe { &mut *transfer };
+        let transfer = unsafe { &mut *transfer };
         let buf = &mut self.out_buf;
 
         transfer.dev_handle = self.hnd.as_ptr();
@@ -264,7 +264,7 @@ impl Device {
     }
 
     fn fill_bulk_in_transfer(&mut self, idx: usize) {
-        let mut transfer = unsafe { &mut *self.in_transfers[idx] };
+        let transfer = unsafe { &mut *self.in_transfers[idx] };
         let buf = &mut self.in_bufs[idx];
 
         transfer.dev_handle = self.hnd.as_ptr();
