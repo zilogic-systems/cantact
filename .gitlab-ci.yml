@@ -1,0 +1,30 @@
+stages:
+  - build
+
+build:
+  stage: build
+  image: $PYIMAGE
+  script:
+    - apt update
+    - apt install -y gcc curl libusb-1.0-0-dev pkg-config
+    - curl -o rust.sh --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs
+    - sh ./rust.sh -y
+    - source "$HOME/.cargo/env"
+    - rustup install nightly
+    - pip install setuptools setuptools_rust
+    - rustup override set nightly
+    - cd driver
+    - python setup.py bdist_wheel
+  artifacts:
+    when: on_success
+    expire_in: "30 days"
+    paths:
+      - driver/dist/cantact-*.whl
+
+  parallel:
+    matrix:
+      - PYIMAGE:
+          - "python:3.9-slim-bullseye"
+          - "python:3.10-slim-bullseye"
+          - "python:3.11-slim-bullseye"
+          - "python:3.12-slim-bullseye"
