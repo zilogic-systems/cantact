@@ -427,6 +427,28 @@ impl Interface {
         Ok(())
     }
 
+    /// Set a custom data bit timing for the specified channel.
+    pub fn set_data_bit_timing(
+        &mut self,
+        channel: usize,
+        brp: u32,
+        phase_seg1: u32,
+        phase_seg2: u32,
+        sjw: u32,
+    ) -> Result<(), Error> {
+        let bt = BitTiming {
+            brp,
+            prop_seg: 0,
+            phase_seg1,
+            phase_seg2,
+            sjw,
+        };
+        self.dev
+            .set_data_bit_timing(channel as u16, bt)
+            .expect("failed to set data bit timing");
+        Ok(())
+    }
+
     /// Enable or disable a channel's listen only mode. When this mode is enabled,
     /// the device will not transmit any frames, errors, or acknowledgements.
     pub fn set_monitor(&mut self, channel: usize, enabled: bool) -> Result<(), Error> {

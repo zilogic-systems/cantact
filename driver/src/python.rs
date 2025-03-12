@@ -79,6 +79,20 @@ impl PyInterface {
         Ok(())
     }
 
+
+    fn set_data_bit_timing(
+        &mut self,
+        channel: usize,
+        brp: u32,
+        phase_seg1: u32,
+        phase_seg2: u32,
+        sjw: u32,
+    ) -> PyResult<()> {
+        self.i
+            .set_data_bit_timing(channel, brp, phase_seg1, phase_seg2, sjw)?;
+        Ok(())
+    }
+
     fn set_enabled(&mut self, channel: usize, enabled: bool) -> PyResult<()> {
         self.i.set_enabled(channel, enabled)?;
         Ok(())
