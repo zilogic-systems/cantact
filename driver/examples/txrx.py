@@ -8,7 +8,7 @@ class CANInterfaceSingleton:
 
     def __new__(cls, *args, **kwargs):
         if not cls._instance:
-            cls._instance = super().__new__(cls, *args, **kwargs)
+            super().__new__(cls, *args, **kwargs)
             cls._instance = cantact.Interface()
         return cls._instance
 
@@ -43,7 +43,7 @@ class CANTransmitter:
 
 
 if "__main__" == __name__:
-    arg_parser = argparse.ArgumentParser(prog="CAN Tx Rx", description="Transmit CAN message using cantact")
+    arg_parser = argparse.ArgumentParser(prog="python txrx.py", description="Transmit CAN message using cantact across channels")
     arg_parser.add_argument("data", nargs="+", type=int, help="Data to be transmitted in CAN")
     arg_parser.add_argument("-t", "--tx-channel", nargs="?", type=int, default=0)
     arg_parser.add_argument("-r", "--rx-channel", nargs="?", type=int, default=1)
