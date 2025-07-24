@@ -538,10 +538,10 @@ impl Interface {
 }
 
 fn calculate_bit_timing(clk: u32, bitrate: u32) -> Result<BitTiming, Error> {
-    let max_brp = 32;
-    let min_seg1 = 3;
-    let max_seg1 = 18;
-    let min_seg2 = 2;
+    let max_brp = 1024;
+    let min_seg1 = 1;
+    let max_seg1 = 16;
+    let min_seg2 = 1;
     let max_seg2 = 8;
     let tolerances = vec![0.0, 0.1 / 100.0, 0.5 / 100.0];
 
@@ -595,7 +595,7 @@ mod tests {
     use super::*;
     #[test]
     fn test_bit_timing() {
-        let clk = 24000000;
+        let clk = 120000000;
         let bitrates = vec![4_020_100, 4_000_000, 3_000_000, 2_400_000, 2_000_000, 1_500_000, 1_200_000, 1_000_000,
                                     800_000, 600_000, 520_000, 500_000, 420_000, 400_000, 320_000, 300_000, 250_000, 200_000, 125_000, 120_000, 100_000,
                                     90_000, 80_000, 70_000, 60_000, 50_000, 40_000, 33_333, 30_000, 29_628];
