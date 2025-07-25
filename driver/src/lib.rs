@@ -217,6 +217,9 @@ pub struct Channel {
     pub fd: bool,
     /// CAN FD data bitrate of the channel in bits/second
     pub data_bitrate: u32,
+    /// When true, device should be started when channel start
+    pub started: bool,
+
 }
 
 /// Interface for interacting with CANtact devices
@@ -271,6 +274,7 @@ impl Interface {
                 monitor: false,
                 fd: false,
                 data_bitrate: 0,
+                started: false,
             });
         }
 
@@ -296,84 +300,101 @@ impl Interface {
     /// For every received frame, the `rx_callback` closure will be called.
     pub fn start(
         &mut self,
+        channel: usize,
         mut rx_callback: impl FnMut(Frame) + Sync + Send + 'static,
     ) -> Result<(), Error> {
+        if channel > self.channel_count {
+          return Err(Error::InvalidChannel);
+        }
+
         // tell the device to go on bus
-        for (i, ch) in self.channels.iter().enumerate() {
-            let mut flags = 0;
-            // for each mode flag, check that the feature is supported before applying feature
-            // this is necessary since the feature flags are pub
-            if ch.monitor {
-                if (self.features & GS_CAN_FEATURE_LISTEN_ONLY) == 0 {
-                    return Err(Error::UnsupportedFeature("Monitor"));
-                }
-                flags |= GS_CAN_MODE_LISTEN_ONLY;
+        let mut flags = 0;
+        // for each mode flag, check that the feature is supported before applying feature
+        // this is necessary since the feature flags are pub
+        if self.channels[channel].monitor {
+            if (self.features & GS_CAN_FEATURE_LISTEN_ONLY) == 0 {
+                return Err(Error::UnsupportedFeature("Monitor"));
             }
-            if ch.loopback {
-                if (self.features & GS_CAN_FEATURE_LOOP_BACK) == 0 {
-                    return Err(Error::UnsupportedFeature("Loopback"));
-                }
-                flags |= GS_CAN_MODE_LOOP_BACK;
+            flags |= GS_CAN_MODE_LISTEN_ONLY;
+        }
+        if self.channels[channel].loopback {
+            if (self.features & GS_CAN_FEATURE_LOOP_BACK) == 0 {
+                return Err(Error::UnsupportedFeature("Loopback"));
             }
-            if ch.fd {
-                if !self.supports_fd() {
-                    return Err(Error::UnsupportedFeature("FD"));
-                }
-                flags |= GS_CAN_MODE_FD;
+            flags |= GS_CAN_MODE_LOOP_BACK;
+        }
+        if self.channels[channel].fd {
+            if !self.supports_fd() {
+                return Err(Error::UnsupportedFeature("FD"));
             }
-
-            let mode = Mode {
-                mode: CanMode::Start as u32,
-                flags,
-            };
-            if ch.enabled {
-                self.dev.set_mode(i as u16, mode).unwrap();
-            }
+            flags |= GS_CAN_MODE_FD;
         }
 
-        {
+        let mode = Mode {
+            mode: CanMode::Start as u32,
+            flags,
+        };
+
+        if self.channels[channel].enabled {
+            self.dev.set_mode(channel as u16, mode).unwrap();
+        }
+
+        if !(self.channels[channel].started) {
+            self.channels[channel].started = true;
+        }
+
+        if !(*self.running.read().unwrap()) {
+
             *self.running.write().unwrap() = true;
-        }
 
-        // rx callback thread
-        let can_rx = self.dev.can_rx_recv.clone();
-        let running = Arc::clone(&self.running);
-        let start_time = time::Instant::now();
-        thread::spawn(move || {
-            while *running.read().unwrap() {
-                match can_rx.recv() {
-                    Ok(hf) => {
-                        let mut f = Frame::from_host_frame(hf);
-                        f.timestamp = Some(time::Instant::now().duration_since(start_time));
-                        rx_callback(f)
-                    }
-                    Err(RecvError) => {
-                        // channel disconnected
-                        break;
+            let can_rx = self.dev.can_rx_recv.clone();
+            let running = Arc::clone(&self.running);
+            let start_time = time::Instant::now();
+            thread::spawn(move || {
+                while *running.read().unwrap() {
+                    match can_rx.recv() {
+                        Ok(hf) => {
+                            let mut f = Frame::from_host_frame(hf);
+                            f.timestamp = Some(time::Instant::now().duration_since(start_time));
+                            rx_callback(f)
+                        }
+                        Err(RecvError) => {
+                            // channel disconnected
+                            break;
+                        }
                     }
                 }
-            }
-        });
-
-        self.dev.start_transfers().unwrap();
+            });
+            self.dev.start_transfers().unwrap();
+        }
         Ok(())
     }
 
     /// Stop CAN communication on all channels.
-    pub fn stop(&mut self) -> Result<(), Error> {
+    pub fn stop(&mut self, channel: usize) -> Result<(), Error> {
         // TODO multi-channel
-        for (i, ch) in self.channels.iter().enumerate() {
+        if channel > self.channel_count {
+            return Err(Error::InvalidChannel);
+        }
+
+        if self.channels[channel].enabled {
             let mode = Mode {
                 mode: CanMode::Reset as u32,
                 flags: 0,
             };
-            if ch.enabled {
-                self.dev.set_mode(i as u16, mode).unwrap();
+            self.dev.set_mode(channel as u16, mode).unwrap();
+            self.channels[channel].started = false;
+        }
+
+        for ch in self.channels.iter() {
+            if ch.started {
+               return Ok(());
             }
         }
 
         self.dev.stop_transfers().unwrap();
         *self.running.write().unwrap() = false;
+
         Ok(())
     }
 
@@ -464,7 +485,7 @@ impl Interface {
         if channel > self.channel_count {
             return Err(Error::InvalidChannel);
         }
-        if *self.running.read().unwrap() {
+        if *self.running.read().unwrap() && self.channels[channel].started {
             return Err(Error::Running);
         }
 
@@ -478,7 +499,7 @@ impl Interface {
         if channel > self.channel_count {
             return Err(Error::InvalidChannel);
         }
-        if *self.running.read().unwrap() {
+        if *self.running.read().unwrap() && self.channels[channel].started {
             return Err(Error::Running);
         }
 
@@ -498,7 +519,7 @@ impl Interface {
         if channel > self.channel_count {
             return Err(Error::InvalidChannel);
         }
-        if *self.running.read().unwrap() {
+        if *self.running.read().unwrap() && self.channels[channel].started {
             return Err(Error::Running);
         }
 
@@ -514,7 +535,7 @@ impl Interface {
         if channel > self.channel_count {
             return Err(Error::InvalidChannel);
         }
-        if *self.running.read().unwrap() {
+        if *self.running.read().unwrap() && self.channels[channel].started {
             return Err(Error::Running);
         }
 

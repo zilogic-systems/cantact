@@ -115,13 +115,16 @@ pub unsafe extern "C" fn cantact_close(ptr: *mut CInterface) -> i32 {
 /// This function starts a thread which will call the registered callback
 /// when a frame is received.
 #[no_mangle]
-pub unsafe extern "C" fn cantact_start(ptr: *mut CInterface) -> i32 {
+pub unsafe extern "C" fn cantact_start(
+    ptr: *mut CInterface,
+    channel: u8,
+) -> i32 {
     let ci = &mut *ptr;
 
     let cb = ci.c_rx_cb;
     match &mut ci.i {
         Some(i) => i
-            .start(move |f: Frame| {
+            .start(channel as usize, move |f: Frame| {
                 match cb {
                     None => {}
                     Some(cb) => {
@@ -137,10 +140,13 @@ pub unsafe extern "C" fn cantact_start(ptr: *mut CInterface) -> i32 {
 
 /// Stop CAN communication. This will stop all configured CAN channels.
 #[no_mangle]
-pub unsafe extern "C" fn cantact_stop(ptr: *mut CInterface) -> i32 {
+pub unsafe extern "C" fn cantact_stop(
+    ptr: *mut CInterface,
+    channel: u8,
+) -> i32 {
     let ci = &mut *ptr;
     match &mut ci.i {
-        Some(i) => i.stop().expect("failed to stop device"),
+        Some(i) => i.stop(channel as usize).expect("failed to stop device"),
         None => return -1,
     }
     0

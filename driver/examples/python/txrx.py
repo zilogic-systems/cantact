@@ -21,17 +21,17 @@ class CANTransmitter:
         self.tx_count = 0
 
     def start(self, arbitration_speed: int, data_speed: Optional[int] = None):
-        self.cantact_interface.stop()
+        self.cantact_interface.stop(self.device_id)
         self.cantact_interface.set_bitrate(self.device_id, arbitration_speed)
         if data_speed is not None:
             self.cantact_interface.set_data_bitrate(self.device_id, data_speed)
         self.cantact_interface.set_enabled(self.device_id, True)
-        self.cantact_interface.start()
+        self.cantact_interface.start(self.device_id)
 
     def stop(self):
-        self.cantact_interface.stop()
+        self.cantact_interface.stop(self.device_id)
         self.cantact_interface.set_enabled(self.device_id, False)
-        self.cantact_interface.start()
+        self.cantact_interface.start(self.device_id)
 
     def send(self, tx_data: List[int], arbitration: int = 0x01B, fd: bool = False, brs: bool = False):
         self.tx_count += 1

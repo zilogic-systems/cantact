@@ -104,10 +104,10 @@ impl PyInterface {
         Ok(())
     }
 
-    fn start(&mut self) -> PyResult<()> {
+    fn start(&mut self, channel: usize) -> PyResult<()> {
         let rx = self.rx_send.clone();
 
-        self.i.start(move |f: Frame| {
+        self.i.start(channel, move |f: Frame| {
             match rx.send(f) {
                 Ok(_) => {}
                 Err(_) => {
@@ -119,8 +119,8 @@ impl PyInterface {
         Ok(())
     }
 
-    fn stop(&mut self) -> PyResult<()> {
-        self.i.stop()?;
+    fn stop(&mut self, channel: usize) -> PyResult<()> {
+        self.i.stop(channel)?;
         Ok(())
     }
 

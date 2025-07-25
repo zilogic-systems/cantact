@@ -6,7 +6,7 @@ Python CANtact dump example.
 
 A simple example of dumping frames to stdout using the cantact module.
 
-Note, most users will want to use the python-can package instead 
+Note, most users will want to use the python-can package instead
 of direct access! See send_one.py for an example.
 """
 
@@ -22,7 +22,7 @@ intf.set_bitrate(0, 500000)
 intf.set_enabled(0, True)
 
 # start the interface
-intf.start()
+intf.start(0)
 
 while True:
     try:
@@ -33,5 +33,5 @@ while True:
             print(f)
     except KeyboardInterrupt:
         # ctrl-c pressed, close the interface
-        intf.stop()
+        intf.stop(0)
         break

@@ -23,6 +23,7 @@ const DEFAULT_CONFIG: Channel = Channel {
     monitor: false,
     fd: false,
     enabled: true,
+    started: true,
 };
 
 #[derive(Debug, Serialize, Deserialize)]

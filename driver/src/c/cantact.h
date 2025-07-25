@@ -32,8 +32,8 @@ extern "C" {
 
 	__declspec(dllimport) int32_t cantact_set_rx_callback(cantacthnd hnd, CantactRxCallback callback);
 
-	__declspec(dllimport) int32_t cantact_start(cantacthnd hnd);
-	__declspec(dllimport) int32_t cantact_stop(cantacthnd hnd);
+	__declspec(dllimport) int32_t cantact_start(cantacthnd hnd, uint8_t channel);
+	__declspec(dllimport) int32_t cantact_stop(cantacthnd hnd, uint8_t channel);
 
 	__declspec(dllimport) int32_t cantact_transmit(cantacthnd hnd, const struct CantactFrame f);
 
