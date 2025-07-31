@@ -5,9 +5,10 @@ use log::info;
 use serde::{Deserialize, Serialize};
 use std::fmt;
 use std::fs;
-use std::fs::File;
 use std::io;
+use std::default;
 use std::io::prelude::*;
+use std::fs::File;
 use std::path::Path;
 
 const APP_INFO: AppInfo = AppInfo {
@@ -29,6 +30,7 @@ pub struct Config {
     #[serde(rename = "channel")]
     pub channels: Vec<Channel>,
 }
+
 impl fmt::Display for Config {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         writeln!(f, "Channels:")?;
@@ -39,13 +41,15 @@ impl fmt::Display for Config {
     }
 }
 
-impl Config {
-    pub fn default() -> Config {
+impl default::Default for Config {
+    fn default() -> Config {
         Config {
             channels: vec![DEFAULT_CONFIG, DEFAULT_CONFIG],
         }
     }
+}
 
+impl Config {
     // since config files are not mandatory, this should never fail
     pub fn read() -> Config {
         let dir = match get_app_root(AppDataType::UserConfig, &APP_INFO) {

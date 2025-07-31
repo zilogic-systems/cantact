@@ -11,6 +11,7 @@ use std::fmt;
 use std::sync::{Arc, RwLock};
 use std::thread;
 use std::time;
+use std::default;
 
 use crossbeam_channel::RecvError;
 
@@ -94,6 +95,27 @@ pub struct Frame {
     /// Timestamp when frame was received
     pub timestamp: Option<time::Duration>,
 }
+
+impl default::Default for Frame {
+    /// Returns a default CAN frame with all values set to zero/false.
+    fn default() -> Frame {
+        Frame {
+            can_id: 0,
+            can_dlc: 0,
+            data: vec![0; 64],
+            channel: 0,
+            ext: false,
+            fd: false,
+            loopback: false,
+            rtr: false,
+            brs: false,
+            esi: false,
+            err: false,
+            timestamp: None,
+        }
+    }
+}
+
 impl Frame {
     fn data_as_array(&self) -> [u8; 64] {
         let mut data = [0u8; 64];
@@ -131,23 +153,7 @@ impl Frame {
             data: self.data_as_array(),
         }
     }
-    /// Returns a default CAN frame with all values set to zero/false.
-    pub fn default() -> Frame {
-        Frame {
-            can_id: 0,
-            can_dlc: 0,
-            data: vec![0; 64],
-            channel: 0,
-            ext: false,
-            fd: false,
-            loopback: false,
-            rtr: false,
-            brs: false,
-            esi: false,
-            err: false,
-            timestamp: None,
-        }
-    }
+
     fn from_host_frame(hf: HostFrame) -> Frame {
         // check the extended bit of host frame
         // if set, frame is extended

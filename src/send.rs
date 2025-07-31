@@ -36,8 +36,7 @@ pub fn cmd(matches: &ArgMatches) -> Result<(), Error> {
     i.start(move |_: Frame| {}).expect("failed to start device");
 
     let mut count = 0;
-    let mut f = Frame::default();
-    f.can_dlc = 8;
+    let mut f = cantact::Frame { can_dlc: 8, ..Default::default() };
     loop {
         f.can_id = count % 0x800;
         i.send(f.clone()).unwrap();

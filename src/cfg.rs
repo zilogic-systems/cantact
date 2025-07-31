@@ -16,29 +16,13 @@ pub fn cmd(matches: &ArgMatches) -> Result<(), Error> {
         Some(ch) => ch,
     };
 
-    if matches.is_present("disable") {
-        config.channels[ch].enabled = false;
-    } else {
-        config.channels[ch].enabled = true;
-    }
+    config.channels[ch].enabled = !matches.is_present("disable");
 
-    if matches.is_present("loopback") {
-        config.channels[ch].loopback = true;
-    } else {
-        config.channels[ch].loopback = false;
-    }
+    config.channels[ch].loopback = matches.is_present("loopback");
 
-    if matches.is_present("monitor") {
-        config.channels[ch].monitor = true;
-    } else {
-        config.channels[ch].monitor = false;
-    }
+    config.channels[ch].monitor = matches.is_present("monitor");
 
-    if matches.is_present("fd") {
-        config.channels[ch].fd = true;
-    } else {
-        config.channels[ch].fd = false;
-    }
+    config.channels[ch].fd = matches.is_present("fd");
 
     if matches.is_present("bitrate") {
         let bitrate = match matches.value_of("bitrate").unwrap().parse::<u32>() {
