@@ -11,6 +11,7 @@ struct PyInterface {
     rx_recv: Receiver<Frame>,
     rx_send: Sender<Frame>,
 }
+
 impl IntoPy<PyObject> for Frame {
     fn into_py(self, py: Python) -> PyObject {
         let d = PyDict::new(py);

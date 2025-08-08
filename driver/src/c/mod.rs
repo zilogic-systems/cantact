@@ -27,6 +27,7 @@ pub struct CFrame {
     rtr: u8,
     err: u8,
 }
+
 impl CFrame {
     fn from_frame(f: Frame) -> CFrame {
         CFrame {
@@ -170,7 +171,7 @@ pub unsafe extern "C" fn cantact_transmit(ptr: *mut CInterface, cf: CFrame) -> i
     0
 }
 
-/// Sets the bitrate for a chanel to the given value in bits per second.
+/// Sets the bitrate for a channel to the given value in bits per second.
 #[no_mangle]
 pub unsafe extern "C" fn cantact_set_bitrate(
     ptr: *mut CInterface,
@@ -181,6 +182,23 @@ pub unsafe extern "C" fn cantact_set_bitrate(
     match &mut ci.i {
         Some(i) => i
             .set_bitrate(channel as usize, bitrate)
+            .expect("failed to set bitrate"),
+        None => return -1,
+    }
+    0
+}
+
+/// Sets the data bitrate for a channel to the given value in bits per second.
+#[no_mangle]
+pub unsafe extern "C" fn cantact_set_data_bitrate(
+    ptr: *mut CInterface,
+    channel: u8,
+    bitrate: u32,
+) -> i32 {
+    let ci = &mut *ptr;
+    match &mut ci.i {
+        Some(i) => i
+            .set_data_bitrate(channel as usize, bitrate)
             .expect("failed to set bitrate"),
         None => return -1,
     }
