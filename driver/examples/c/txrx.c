@@ -76,7 +76,7 @@ int main() {
     printf("RX callback registered.\n");
 
     // 5. Start communication on the CAN bus
-    if (cantact_start(hnd) != 0) {
+    if (cantact_start(hnd, channel) != 0) {
         printf("Error: Failed to start communication.\n");
         cantact_close(hnd);
         cantact_deinit(hnd);
@@ -123,7 +123,7 @@ int main() {
 
     // 8. Stop and clean up
     printf("\nStopping communication...\n");
-    cantact_stop(hnd);
+    cantact_stop(hnd, channel);
     printf("Closing device...\n");
     cantact_close(hnd);
     printf("Deinitializing library...\n");
