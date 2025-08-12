@@ -33,7 +33,7 @@ pub fn cmd(matches: &ArgMatches) -> Result<(), Error> {
 
     // start the device
     info!("starting dump");
-    i.start(ch, move |_: Frame| {}).expect("failed to start device");
+    i.start(ch.unwrap(), move |_: Frame| {}).expect("failed to start device");
 
     let mut count = 0;
     let mut f = cantact::Frame { can_dlc: 8, ..Default::default() };
@@ -49,6 +49,6 @@ pub fn cmd(matches: &ArgMatches) -> Result<(), Error> {
             break;
         }
     }
-    i.stop(ch)?;
+    i.stop(ch.unwrap())?;
     Ok(())
 }

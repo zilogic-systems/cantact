@@ -54,13 +54,13 @@ pub fn cmd(matches: &ArgMatches) -> Result<(), Error> {
 
     // start the device
     info!("starting dump");
-    i.start(ch, move |f: Frame| {
+    i.start(ch.unwrap(), move |f: Frame| {
         print_frame(f);
     })
     .expect("failed to start device");
 
     helpers::wait_for_ctrlc(&flag);
 
-    i.stop(ch).expect("failed to stop device");
+    i.stop(ch.unwrap()).expect("failed to stop device");
     Ok(())
 }
