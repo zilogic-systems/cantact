@@ -157,7 +157,7 @@ pub unsafe extern "C" fn cantact_stop(
 pub unsafe extern "C" fn cantact_transmit(ptr: *mut CInterface, cf: CFrame) -> i32 {
     let ci = &mut *ptr;
     let f = Frame {
-        channel: 0, //cf.channel,
+        channel: cf.channel, //cf.channel,
         can_id: cf.id,
         can_dlc: cf.dlc,
         data: cf.data.to_vec(),
@@ -274,4 +274,21 @@ pub unsafe extern "C" fn cantact_get_channel_count(ptr: *mut CInterface) -> i32 
         Some(i) => i.channels() as i32,
         None => -1,
     }
+}
+
+/// Enable or disable FD mode for a channel.
+#[no_mangle]
+pub unsafe extern "C" fn cantact_set_fd(
+    ptr: *mut CInterface,
+    channel: u8,
+    enabled: u8,
+) -> i32 {
+    let ci = &mut *ptr;
+    match &mut ci.i {
+        Some(i) => i
+            .set_fd(channel as usize, enabled > 0)
+            .expect("failed to set fd mode"),
+        None => return -1,
+    }
+    0
 }

@@ -44,6 +44,8 @@ extern "C" {
 	__declspec(dllimport) int32_t cantact_set_hw_loopback(cantacthnd hnd, uint8_t channel, uint8_t enabled);
 
 	__declspec(dllimport) int32_t cantact_get_channel_count(cantacthnd hnd);
+
+	__declspec(dllimport) int32_t cantact_set_fd(cantacthnd hnd, uint8_t channel, uint8_t enabled);
 #ifdef __cplusplus
 }
 #endif  // __cplusplus
